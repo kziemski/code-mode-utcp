@@ -157,6 +157,10 @@ Connect to any Model Context Protocol server:
 > package once at startup so it can register itself with the client; the plugin
 > registers as a side effect of being imported. For `mcp`, that's `@utcp/mcp`.
 > The same pattern applies to other transports: `@utcp/http`, `@utcp/text`, etc.
+>
+> ```bash
+> npm install @utcp/mcp
+> ```
 
 ```typescript
 import '@utcp/mcp';                      // registers the 'mcp' call template
