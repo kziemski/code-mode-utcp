@@ -153,7 +153,13 @@ npm install @utcp/code-mode
 ### 1. **MCP Server Integration**
 Connect to any Model Context Protocol server:
 
+> Each `call_template_type` is a separate plugin package. Install and import the
+> package once at startup so it can register itself with the client; the plugin
+> registers as a side effect of being imported. For `mcp`, that's `@utcp/mcp`.
+> The same pattern applies to other transports: `@utcp/http`, `@utcp/text`, etc.
+
 ```typescript
+import '@utcp/mcp';                      // registers the 'mcp' call template
 import { CodeModeUtcpClient } from '@utcp/code-mode';
 
 const client = await CodeModeUtcpClient.create();
@@ -165,6 +171,7 @@ await client.registerManual({
   config: {
     mcpServers: {
       github: {
+        transport: 'stdio',              // required by @utcp/mcp
         command: 'docker',
         args: ['run', '-i', '--rm', '-e', 'GITHUB_PERSONAL_ACCESS_TOKEN', 'mcp/github'],
         env: { GITHUB_PERSONAL_ACCESS_TOKEN: process.env.GITHUB_TOKEN }

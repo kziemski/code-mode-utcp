@@ -173,6 +173,11 @@ Remember: The power of this system comes from combining multiple tools in sophis
             task_description: z.string().describe("A natural language description of the task."),
             limit: z.number().optional().default(10),
         },
+        annotations: {
+            readOnlyHint: true,
+            openWorldHint: false,
+            idempotentHint: true,
+        },
     }, async (input) => {
         const client = await initializeUtcpClient();
         try {
@@ -192,6 +197,11 @@ Remember: The power of this system comes from combining multiple tools in sophis
         title: "List All Registered UTCP Tools",
         description: "Returns a list of all tool names currently registered.",
         inputSchema: {},
+        annotations: {
+            readOnlyHint: true,
+            openWorldHint: false,
+            idempotentHint: true,
+        },
     }, async () => {
         const client = await initializeUtcpClient();
         try {
@@ -208,6 +218,11 @@ Remember: The power of this system comes from combining multiple tools in sophis
         description: "Get required environment variables for a registered tool.",
         inputSchema: {
             tool_name: z.string().describe("Name of the tool to get required variables for."),
+        },
+        annotations: {
+            readOnlyHint: true,
+            openWorldHint: false,
+            idempotentHint: true,
         },
     }, async (input) => {
         const client = await initializeUtcpClient();
@@ -228,6 +243,11 @@ Remember: The power of this system comes from combining multiple tools in sophis
         description: "Get complete information about a specified list of tools, including TypeScript interface definition.",
         inputSchema: {
             tool_names: z.array(z.string()).describe("Names of the tools to get complete information for."),
+        },
+        annotations: {
+            readOnlyHint: true,
+            openWorldHint: false,
+            idempotentHint: true,
         },
     }, async (input) => {
         const client = await initializeUtcpClient();
