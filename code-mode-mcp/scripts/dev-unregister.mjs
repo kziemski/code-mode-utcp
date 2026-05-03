@@ -21,15 +21,42 @@ const getArg = (flag, fallback) => {
 
 const name = getArg("--name", "utcp-codemode-dev");
 
-function run(cmd, args, opts = {}) {
-  console.log(`> ${cmd} ${args.join(" ")}  (in ${opts.cwd ?? process.cwd()})`);
-  spawnSync(cmd, args, { stdio: "inherit", shell: true, ...opts });
+if (!/^[a-zA-Z0-9_-]+$/.test(name)) {
+  console.error(`✗ Invalid --name '${name}'. Must match [a-zA-Z0-9_-]+.`);
+  process.exit(1);
 }
 
-run("claude", ["mcp", "remove", name, "--scope", "user"]);
+let hadFailure = false;
+
+// `claude mcp remove` is allowed to fail (entry may already be gone) — log
+// but don't abort the rest of the cleanup. Other steps must succeed for the
+// success message to be honest.
+function tryRun(cmd, args, opts = {}) {
+  console.log(`> ${cmd} ${args.join(" ")}  (in ${opts.cwd ?? process.cwd()})`);
+  const r = spawnSync(cmd, args, { stdio: "inherit", shell: true, ...opts });
+  if (r.status !== 0) {
+    console.warn(`⚠ ${cmd} ${args[0] ?? ""} exited ${r.status}; continuing.`);
+  }
+}
+
+function mustRun(cmd, args, opts = {}) {
+  console.log(`> ${cmd} ${args.join(" ")}  (in ${opts.cwd ?? process.cwd()})`);
+  const r = spawnSync(cmd, args, { stdio: "inherit", shell: true, ...opts });
+  if (r.status !== 0) {
+    console.error(`✗ ${cmd} ${args[0] ?? ""} failed (exit ${r.status}).`);
+    hadFailure = true;
+  }
+}
+
+tryRun("claude", ["mcp", "remove", name, "--scope", "user"]);
 // Reinstall @utcp/code-mode from the registry, undoing the dev-register dist
 // overlay. --no-save keeps package.json untouched.
-run("npm", ["install", "@utcp/code-mode", "--no-save"], { cwd: bridgeDir });
+mustRun("npm", ["install", "@utcp/code-mode", "--no-save"], { cwd: bridgeDir });
+
+if (hadFailure) {
+  console.error(`\n✗ Unregister completed with errors. Registry @utcp/code-mode may not have been restored — re-run 'npm install' manually before publishing.`);
+  process.exit(1);
+}
 
 console.log(`\n✓ Unregistered '${name}' and restored registry @utcp/code-mode.`);
 console.log(`  Restart Claude Code so it stops trying to spawn the dev bridge.`);
