@@ -78,6 +78,40 @@ registerCli();
 
 **Security Note:** Only enable CLI if you trust the code that will be executed, as CLI tools can execute arbitrary commands on your system.
 
+### Claude Code (CLI)
+
+For [Claude Code](https://claude.com/claude-code) (the CLI / IDE extension), register the bridge as a user-scoped MCP server:
+
+```bash
+claude mcp add-json --scope user utcp-codemode '{"type":"stdio","command":"npx","args":["@utcp/code-mode-mcp"],"env":{"UTCP_CONFIG_FILE":"/absolute/path/to/.utcp_config.json"}}'
+```
+
+Then restart Claude Code. Verify with `claude mcp list`. Remove with `claude mcp remove utcp-codemode --scope user`.
+
+## 🧪 Local development against the bridge
+
+If you're hacking on `@utcp/code-mode` (the sibling `typescript-library/` package) and want to exercise it through Claude Code, use the dev scripts:
+
+```bash
+cd code-mode-mcp
+npm install
+npm run dev:register     # builds lib + bridge, overlays the lib build into the bridge's node_modules, registers as 'utcp-codemode-dev' in Claude Code
+# restart Claude Code, then call mcp__utcp-codemode-dev__call_tool_chain to test
+
+# After every edit:
+npm run dev:register     # rebuilds, re-registers; restart Claude Code
+
+# When done:
+npm run dev:unregister   # removes the MCP entry and restores the registry @utcp/code-mode
+```
+
+Both scripts are idempotent and never mutate `package.json`. The overlay strategy avoids `npm link`, which under modern npm aliases `unlink` to `uninstall --save` and would silently strip the dependency.
+
+Flags:
+
+- `--name <mcp-name>` (default `utcp-codemode-dev`) — useful if you want the dev bridge alongside a published one
+- `--config <path>` (default `./.utcp_config.json`) — point at a different UTCP config
+
 ## 🛠️ Available MCP Tools
 
 The bridge exposes these MCP tools for managing your UTCP Code Mode ecosystem:
